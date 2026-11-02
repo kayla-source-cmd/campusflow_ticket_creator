@@ -9,238 +9,244 @@ app = Flask(__name__)
 
 # The whole UI (HTML + CSS + JavaScript) lives in this one string.
 PAGE = """
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CampusFlow Ticket Creator</title>
+  <title>CampusFlow</title>
   <style>
-    :root {
-      --bg: #f4f6fb;
-      --card: #ffffff;
-      --text: #1c2333;
-      --muted: #6b7385;
-      --border: #dde1ea;
-      --accent: #3b5bdb;
-      --accent-hover: #2f49b3;
-      --success-bg: #e6f6ec;
-      --success-text: #1a7f37;
-      --error-bg: #fdeaea;
-      --error-text: #b00020;
-      --box-border: #e0a800;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #12151f;
-        --card: #1b2030;
-        --text: #e8ebf3;
-        --muted: #9aa3b8;
-        --border: #2d3550;
-        --accent: #6f8cff;
-        --accent-hover: #5877f0;
-        --success-bg: #14301f;
-        --success-text: #6fd58d;
-        --error-bg: #3a1a1f;
-        --error-text: #ff8a98;
-      }
-    }
     * { box-sizing: border-box; }
+    html, body { height: 100%; }
     body {
       margin: 0;
-      background: var(--bg);
-      color: var(--text);
+      background: linear-gradient(160deg, #0b1020 0%, #14213d 100%);
+      color: #e8ebf2;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       line-height: 1.5;
     }
-    .container { max-width: 640px; margin: 0 auto; padding: 2rem 1rem 4rem; }
-    .header { text-align: center; margin-bottom: 1.5rem; }
-    .header h1 { margin: 0; font-size: 2rem; color: var(--accent); }
-    .subtitle { margin: 0.25rem 0 0; color: var(--muted); }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 1.25rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-    .field { margin-bottom: 1.1rem; }
-    label { display: block; margin-bottom: 0.35rem; font-weight: 600; font-size: 0.95rem; }
-    input, textarea, select {
+    .page {
+      min-height: 100vh;
       width: 100%;
-      padding: 0.7rem 0.8rem;
-      font: inherit;
-      color: var(--text);
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-    }
-    input:focus, textarea:focus, select:focus {
-      outline: 2px solid var(--accent);
-      outline-offset: 1px;
-    }
-    textarea { resize: vertical; }
-    .hint { display: block; margin-top: 0.25rem; text-align: right; font-size: 0.8rem; color: var(--muted); }
-    .btn {
+      padding: 32px clamp(16px, 5vw, 80px);
       display: flex;
+      flex-direction: column;
+    }
+    h1 { margin: 0; font-size: 2rem; color: #74c0fc; }
+    .sub { margin: 4px 0 24px; color: #9aa5b5; }
+    form { flex: 1; display: flex; flex-direction: column; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px 24px;
+    }
+    .full { grid-column: 1 / -1; }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+      color: var(--c);
+    }
+    .field input, .field textarea, .field select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid var(--c);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #e8ebf2;
+      font: inherit;
+    }
+    .field select option { color: #111; }
+    .field input:focus, .field textarea:focus, .field select:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--c);
+    }
+    .field textarea { min-height: 110px; resize: vertical; }
+    .hint { font-size: 0.8rem; color: #9aa5b5; margin-top: 4px; }
+
+    .counter { text-align: right; font-size: 0.85rem; color: #9aa5b5; margin-top: 12px; }
+
+    button {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.6rem;
-      width: 100%;
-      padding: 0.8rem;
+      gap: 8px;
+      padding: 14px 20px;
+      border: 0;
+      border-radius: 10px;
+      background: #f06595;
+      color: #ffffff;
       font: inherit;
-      font-weight: 600;
-      color: #fff;
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
+      font-weight: 700;
       cursor: pointer;
-      transition: background 0.15s;
     }
-    .btn:hover { background: var(--accent-hover); }
-    .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    button:disabled { opacity: 0.7; cursor: wait; }
+    #submit-btn { width: 100%; margin-top: 16px; font-size: 1.05rem; }
     .spinner {
       display: none;
-      width: 1rem;
-      height: 1rem;
-      border: 2px solid rgba(255, 255, 255, 0.4);
-      border-top-color: #fff;
+      width: 16px;
+      height: 16px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: spin 0.7s linear infinite;
     }
-    .btn.loading .spinner { display: inline-block; }
+    button.loading .spinner { display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .alert { padding: 0.85rem 1rem; border-radius: 8px; margin-bottom: 1.25rem; }
-    .alert.success { background: var(--success-bg); color: var(--success-text); }
-    .alert.error { background: var(--error-bg); color: var(--error-text); }
-    .results { border: 2px solid var(--box-border); }
-    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
-    .results-header h2 { margin: 0; font-size: 1.15rem; }
-    .btn-small {
-      padding: 0.35rem 0.8rem;
-      font: inherit;
-      font-size: 0.85rem;
-      color: var(--text);
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      cursor: pointer;
+
+    .msg { margin-top: 20px; padding: 12px 14px; border-radius: 10px; }
+    .msg.error { background: #3a1c1c; color: #ffb3b3; }
+    .msg.ok { background: #16301f; color: #9be3b8; }
+
+    .suggestions {
+      margin-top: 20px;
+      border: 2px solid #38d9a9;
+      border-radius: 12px;
     }
-    .btn-small:hover { border-color: var(--accent); color: var(--accent); }
-    .suggestions { margin: 0; white-space: pre-wrap; word-wrap: break-word; font-family: inherit; }
+    .suggestions-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid #38d9a9;
+      font-weight: 700;
+      color: #38d9a9;
+    }
+    .suggestions-head button { padding: 6px 12px; font-size: 0.85rem; background: #38d9a9; color: #0b1020; }
+    .suggestions pre {
+      margin: 0;
+      padding: 14px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: inherit;
+    }
   </style>
 </head>
 <body>
-  <main class="container">
-    <header class="header">
-      <h1>CampusFlow</h1>
-      <p class="subtitle">Create a helpdesk ticket and get AI-powered fix suggestions.</p>
-    </header>
+  <div class="page">
+    <h1>CampusFlow</h1>
+    <p class="sub">Create a helpdesk ticket and get AI-powered fix suggestions.</p>
 
-    <form id="ticket-form" class="card" method="post">
-      <div class="field">
-        <label for="title">Ticket title</label>
-        <input id="title" name="title" type="text" maxlength="100"
-               placeholder="e.g. Wi-Fi keeps disconnecting"
-               value="{{ form.title or '' }}" required>
+    <form method="post" id="ticket-form">
+      <div class="grid">
+        <div class="field full" style="--c:#ffd43b">
+          <label for="title">Ticket title</label>
+          <input type="text" id="title" name="title" value="{{ form.title }}" maxlength="100" placeholder="e.g. Laptop screen broken" required>
+        </div>
+
+        <div class="field full" style="--c:#ff8787">
+          <label for="issue">What is the issue?</label>
+          <textarea id="issue" maxlength="400" placeholder="e.g. The screen is cracked and shows lines" required></textarea>
+        </div>
+
+        <div class="field" style="--c:#69db7c">
+          <label for="place">Where is it?</label>
+          <input type="text" id="place" maxlength="100" placeholder="e.g. Computer cluster, Block B" required>
+        </div>
+
+        <div class="field" style="--c:#4dabf7">
+          <label for="when">When did it happen?</label>
+          <input type="text" id="when" maxlength="100" placeholder="e.g. Monday morning" required>
+        </div>
+
+        <div class="field" style="--c:#da77f2">
+          <label for="duration">How long has it been going on?</label>
+          <input type="text" id="duration" maxlength="100" placeholder="e.g. Over a week">
+        </div>
+
+        <div class="field" style="--c:#38d9a9">
+          <label for="model">AI model</label>
+          <select id="model" name="model">
+            {% for key, value in models.items() %}
+              <option value="{{ key }}" {% if key == form.model %}selected{% endif %}>
+                {{ value.name if value is mapping and value.name else value }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field full" style="--c:#ffa94d">
+          <label for="extra">Anything else? (optional)</label>
+          <textarea id="extra" maxlength="200" placeholder="e.g. Already restarted it, did not help"></textarea>
+        </div>
       </div>
 
-      <div class="field">
-        <label for="description">Description</label>
-        <textarea id="description" name="description" rows="5" maxlength="1000"
-                  placeholder="Describe what is happening, where, and since when..."
-                  required>{{ form.description or '' }}</textarea>
-        <span id="char-count" class="hint">0 / 1000</span>
-      </div>
+      <input type="hidden" id="description" name="description">
+      <div class="counter"><span id="count">0</span> / 1000</div>
 
-      <div class="field">
-        <label for="model">AI model</label>
-        <select id="model" name="model">
-          {% for key, m in models.items() %}
-            <option value="{{ key }}" {% if form.model == key %}selected{% endif %}>
-              {{ m.model }} ({{ m.provider }})
-            </option>
-          {% endfor %}
-          <option value="0" {% if form.model == '0' %}selected{% endif %}>Skip AI suggestions</option>
-        </select>
-      </div>
-
-      <button id="submit-btn" type="submit" class="btn">
-        <span class="btn-text">Create ticket</span>
-        <span class="spinner" aria-hidden="true"></span>
+      <button type="submit" id="submit-btn">
+        <span class="spinner"></span>
+        <span id="btn-label">Create ticket</span>
       </button>
     </form>
 
-    {% if ticket %}
-      <div class="alert success" role="status">
-        Ticket <strong>{{ ticket.id }}</strong> created successfully.
-      </div>
+    {% if error %}
+      <div class="msg error">{{ error }}</div>
     {% endif %}
 
-    {% if error %}
-      <div class="alert error" role="alert">{{ error }}</div>
+    {% if ticket %}
+      <div class="msg ok">Ticket {{ ticket.id }} saved: {{ ticket.title }}</div>
     {% endif %}
 
     {% if suggestions %}
-      <section id="results" class="card results">
-        <div class="results-header">
-          <h2>AI suggestions</h2>
-          <button id="copy-btn" type="button" class="btn-small">Copy</button>
+      <div class="suggestions">
+        <div class="suggestions-head">
+          <span>AI suggestions</span>
+          <button type="button" id="copy-btn">Copy</button>
         </div>
-        <pre id="suggestions-text" class="suggestions">{{ suggestions }}</pre>
-      </section>
+        <pre id="suggestions-text">{{ suggestions }}</pre>
+      </div>
     {% endif %}
-  </main>
+  </div>
 
   <script>
-    // Character counter for the description box
-    const description = document.getElementById("description");
-    const charCount = document.getElementById("char-count");
+    const form = document.getElementById("ticket-form");
+    const hidden = document.getElementById("description");
+    const count = document.getElementById("count");
+    const submitBtn = document.getElementById("submit-btn");
+    const btnLabel = document.getElementById("btn-label");
+    const copyBtn = document.getElementById("copy-btn");
+
+    function buildDescription() {
+      const parts = [
+        ["Issue", document.getElementById("issue").value],
+        ["Location", document.getElementById("place").value],
+        ["When it happened", document.getElementById("when").value],
+        ["Duration", document.getElementById("duration").value],
+        ["Extra details", document.getElementById("extra").value]
+      ];
+      return parts
+        .filter(function (p) { return p[1].trim() !== ""; })
+        .map(function (p) { return p[0] + ": " + p[1].trim(); })
+        .join("\n");
+    }
 
     function updateCount() {
-      charCount.textContent = description.value.length + " / " + description.maxLength;
+      count.textContent = buildDescription().length;
     }
-    if (description && charCount) {
-      description.addEventListener("input", updateCount);
-      updateCount();
-    }
+    form.addEventListener("input", updateCount);
+    updateCount();
 
-    // Loading state while the AI request is running
-    const form = document.getElementById("ticket-form");
-    const submitBtn = document.getElementById("submit-btn");
+    form.addEventListener("submit", function () {
+      hidden.value = buildDescription();
+      submitBtn.classList.add("loading");
+      submitBtn.disabled = true;
+      btnLabel.textContent = "Working...";
+    });
 
-    if (form && submitBtn) {
-      form.addEventListener("submit", function () {
-        const btnText = submitBtn.querySelector(".btn-text");
-        submitBtn.disabled = true;
-        submitBtn.classList.add("loading");
-        btnText.textContent = "Creating ticket and fetching suggestions...";
-      });
-    }
-
-    // Copy button for the suggestions
-    const copyBtn = document.getElementById("copy-btn");
-    const suggestionsText = document.getElementById("suggestions-text");
-
-    if (copyBtn && suggestionsText) {
+    if (copyBtn) {
       copyBtn.addEventListener("click", async function () {
+        const text = document.getElementById("suggestions-text").innerText;
         try {
-          await navigator.clipboard.writeText(suggestionsText.textContent);
+          await navigator.clipboard.writeText(text);
           copyBtn.textContent = "Copied!";
-        } catch (err) {
+        } catch (e) {
           copyBtn.textContent = "Copy failed";
         }
-        setTimeout(function () {
-          copyBtn.textContent = "Copy";
-        }, 1500);
+        setTimeout(function () { copyBtn.textContent = "Copy"; }, 1500);
       });
-    }
-
-    // Scroll to the results when they appear
-    const results = document.getElementById("results");
-    if (results) {
-      results.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   </script>
 </body>
