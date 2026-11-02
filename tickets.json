@@ -103,5 +103,15 @@
         "id": "A021",
         "title": "wifi",
         "description": "poor"
+    },
+    {
+        "id": "A022",
+        "title": "wifi",
+        "description": "Issue: bad network\r\nLocation: cluster\r\nWhen it happened: monday\r\nDuration: over a week"
+    },
+    {
+        "id": "A023",
+        "title": "laptop",
+        "description": "Issue: enter key is not working well\r\nLocation: cluster\r\nWhen it happened: today\r\nDuration: 2 hours\r\nExtra details: no"
     }
 ]
