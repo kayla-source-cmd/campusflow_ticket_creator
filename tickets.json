@@ -113,5 +113,10 @@
         "id": "A023",
         "title": "laptop",
         "description": "Issue: enter key is not working well\r\nLocation: cluster\r\nWhen it happened: today\r\nDuration: 2 hours\r\nExtra details: no"
+    },
+    {
+        "id": "A024",
+        "title": "wifi",
+        "description": "Issue: poor\r\nLocation: cluster\r\nWhen it happened: monday\r\nDuration: 2days ago"
     }
 ]
