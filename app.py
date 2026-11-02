@@ -233,6 +233,26 @@ PAGE = r"""
 
         <div class="log" id="log">
           {% if ticket %}
+            {% set colors = {'Issue': '#fb7185', 'Location': '#5eead4', 'When it happened': '#38bdf8', 'Duration': '#a78bfa', 'Extra details': '#fb923c'} %}
+            <div class="line ok"><span class="sym">✓</span><span class="txt">Ticket creation started.</span></div>
+
+            <div class="line ask" style="--c:#fbbf24"><span class="sym">›</span><span class="txt">Ticket title</span></div>
+            <div class="line user"><span class="sym">$</span><span class="txt">{{ ticket.title }}</span></div>
+
+            {% for part in ticket.description.splitlines() %}
+              {% set pieces = part.split(': ', 1) %}
+              {% set label = pieces[0] %}
+              {% set value = pieces[1] if pieces|length > 1 else '' %}
+              <div class="line ask" style="--c:{{ colors.get(label, '#e6f4f1') }}"><span class="sym">›</span><span class="txt">{{ label }}</span></div>
+              <div class="line user"><span class="sym">$</span><span class="txt">{{ value }}</span></div>
+            {% endfor %}
+
+            {% set chosen = models.get(form.model) %}
+            {% if chosen %}
+              <div class="line ask" style="--c:#a3e635"><span class="sym">›</span><span class="txt">AI model</span></div>
+              <div class="line user"><span class="sym">$</span><span class="txt">{{ chosen.model }} ({{ chosen.provider }})</span></div>
+            {% endif %}
+
             <div class="line ok"><span class="sym">✓</span><span class="txt">Ticket {{ ticket.id }} saved: {{ ticket.title }}</span></div>
           {% endif %}
           {% if suggestions %}
